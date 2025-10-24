@@ -11,8 +11,9 @@ RUN dnf install \
 	python3.12 python3-pip -y
 # if adding podman client is desired: 
 # that will require to run: "podman system service tcp:IP:PORT --time=0" on server. e.g: 192.168.22.4:8888
-# ...and when launching container, pass environment variable REMOTE_PODMAN with this value
-RUN dnf install podman -y ; alias docker=podman;
+# ...and when launching container, pass environment variable REMOTE_PODMAN with this value, e.g: 
+# podman run -it --net host --rm -e REMOTE_PODMAN=192.168.22.4:8888 -e GITHUB_TOKEN=$GITHUB_TOKEN mcp:latest 
+RUN dnf install podman -y ; ln -s /usr/bin/podman /usr/bin/docker
 # 
 RUN pip install -qU duckduckgo-search langchain-community ddgs
 RUN wget https://go.dev/dl/go1.25.3.linux-amd64.tar.gz
