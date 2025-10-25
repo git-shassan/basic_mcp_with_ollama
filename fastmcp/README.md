@@ -60,7 +60,12 @@ mcpServers:
      args: "/home/farrukh/MCP/websearch.py"
 
 ```
-Then run the MCP user
+Then run the MCP client
+
+=== Running MCP client: 
+```
+go/bin/mcphost --config ./mcphost.yml
+```
 
 
 
