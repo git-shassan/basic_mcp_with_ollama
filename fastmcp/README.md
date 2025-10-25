@@ -1,4 +1,4 @@
-= Setup fastmcp: 
+=== Setup fastmcp: 
 
 ```
 pip install langchain_community
@@ -13,6 +13,7 @@ pip 23.2.1 <<snip>>
 ```
 
 === Create server and client apps:
+
 See other files
 
 === To inspect MCP:
@@ -33,6 +34,7 @@ mcp-inspector /home/farrukh/MCP/mcp/bin/python /home/farrukh/MCP/websearch.py
 Then use "connect" to connect to the MCP server
 
 === Install mcp-server & configure:
+
 export GITHUB_TOKEN first
 
 ```
