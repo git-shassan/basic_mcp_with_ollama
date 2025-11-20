@@ -1,0 +1,77 @@
+# rearranges the function for cleaner flow, and new function for pretty output 
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+import asyncio
+
+def print_nice_response (response):
+  from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+  # Get the messages from the result
+  messages = response.get("messages", [])
+  # Separate by type
+  for message in messages:
+    if isinstance(message, HumanMessage):
+      print(f"Human: {message.content}")
+    elif isinstance(message, AIMessage):
+      print(f"AI: {message.content}")
+      # If there are tool calls
+      if hasattr(message, 'tool_calls') and message.tool_calls:
+        print(f"  Tool calls: {message.tool_calls}")
+    elif isinstance(message, ToolMessage):
+      print(f"Tool ({message.name}): {message.content}")
+    elif isinstance(message, SystemMessage):
+      print(f"System: {message.content}")
+    print("-" * 50)
+
+client = MultiServerMCPClient(
+    {
+        "kubernetes": {
+            "transport": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "kubernetes-mcp-server@latest"
+                ],
+        }
+    }
+)
+
+model = init_chat_model( model="llama3.2:3b", model_provider="ollama", base_url="http://localhost:11434") 
+
+
+async def get_tools():
+    tools = await client.get_tools()
+    for tool in tools:
+        print(f"Tool Name: {tool.name}")
+        print(f"Description: {tool.description}")
+        print("-" * 20)
+    return(tools)
+
+tools = asyncio.run(get_tools())
+
+agent = create_agent(
+  model,
+  tools,
+)
+
+async def get_response(agent, query):
+    print("Agent:"+str(agent)+"Query:"+str(query))
+    response = await agent.ainvoke(
+        {"messages": [{"role": "system", "content": "you are a model who can use available tools to get an answer" },{"role": "user", "content": query}]}
+    )
+    return(response)
+
+#response = asyncio.run(get_response(agent,"check my kubernetes cluster and tell me the list of namespaces in this cluster "))
+response = asyncio.run(get_response(agent,"check my kubernetes cluster and tell me what is the version of openshift I am running?"))
+
+print("============================== Raw Resonse ===")
+print(response)
+
+from langchain_core.messages import convert_to_messages
+
+print("============================== Beautified Resonse ===")
+for message in convert_to_messages(response["messages"]):
+  message.pretty_print()
+
+print("============================== Nice Resonse ===")
+print_nice_response(response)
